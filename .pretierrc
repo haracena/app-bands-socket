@@ -1,0 +1,4 @@
+{
+  "singleQuote": true, // para que use comillas simples
+  "arrowParens": "avoid" // evitar () en arrow function con un parámetro
+}

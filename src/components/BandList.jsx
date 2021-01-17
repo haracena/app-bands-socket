@@ -1,11 +1,18 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
+import { SocketContext } from '../context/SocketContext';
 
-const BandList = ({ data, votar, borrar, cambiarNombre }) => {
-  const [bands, setBands] = useState(data);
+const BandList = () => {
+  const [bands, setBands] = useState([]);
+  const { socket } = useContext(SocketContext);
 
   useEffect(() => {
-    setBands(data);
-  }, [data]);
+    socket.on('current-bands', (bands) => {
+      // console.log(bands);
+      setBands(bands);
+    });
+
+    return () => socket.off('current-bands');
+  }, [socket]);
 
   const cambioNombre = (event, id) => {
     const nuevoNombre = event.target.value;
@@ -19,9 +26,16 @@ const BandList = ({ data, votar, borrar, cambiarNombre }) => {
     );
   };
 
-  const onPerioFoco = (id, nombre) => {
-    console.log(id, nombre);
-    cambiarNombre(id, nombre);
+  const onPerdioFoco = (id, nombre) => {
+    socket.emit('cambiar-nombre-banda', { id, nombre });
+  };
+
+  const votar = (id) => {
+    socket.emit('votar-banda', id);
+  };
+
+  const borrarBanda = (id) => {
+    socket.emit('borrar-banda', id);
   };
 
   const crearRows = () => {
@@ -38,14 +52,17 @@ const BandList = ({ data, votar, borrar, cambiarNombre }) => {
             className='form-control'
             value={band.name}
             onChange={(e) => cambioNombre(e, band.id)}
-            onBlur={() => onPerioFoco(band.id, band.name)}
+            onBlur={() => onPerdioFoco(band.id, band.name)}
           />
         </td>
         <td>
           <h3>{band.votes}</h3>
         </td>
         <td>
-          <button className='btn btn-danger' onClick={() => borrar(band.id)}>
+          <button
+            className='btn btn-danger'
+            onClick={() => borrarBanda(band.id)}
+          >
             Borrar
           </button>
         </td>
